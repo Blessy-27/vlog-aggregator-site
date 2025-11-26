@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VlogStream — Vlog Aggregator MVP</title>
+  <style>
+    /* ------------------
+       Minimal, clean styles
+       (single-file MVP; we'll split later)
+    -------------------*/
+    :root{
+      --bg:#0b0c10; --card:#111217; --text:#e6e7eb; --muted:#9aa0a6; --brand:#7c5cff;
+      --chip:#1a1c24; --chip-text:#cfd3dc; --border:#22242c; --hover:#191b22;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial; background:var(--bg); color:var(--text)}
+    a{color:inherit; text-decoration:none}
+    .container{max-width:1200px; margin:0 auto; padding:20px}
+
+    /* Navbar */
+    .navbar{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 0}
+    .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.5px}
+    .logo{width:34px; height:34px; border-radius:10px; background:linear-gradient(145deg, #9b8cff, #5f39ff)}
+    .nav-right{display:flex; align-items:center; gap:10px}
+    .search{flex:1; display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border); padding:10px 12px; border-radius:14px}
+    .search input{flex:1; background:transparent; border:0; outline:none; color:var(--text); font-size:14px}
+    .btn{border:1px solid var(--border); background:var(--card); color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer}
+    .btn:hover{background:var(--hover)}
+
+    /* Chips */
+    .chips{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 12px}
+    .chip{background:var(--chip); border:1px solid var(--border); color:var(--chip-text); padding:8px 12px; border-radius:999px; font-size:13px; cursor:pointer}
+    .chip.active{background:var(--brand); color:white; border-color:transparent}
+
+    /* Grid */
+    .grid{display:grid; grid-template-columns:repeat(1,1fr); gap:16px}
+    @media(min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(min-width:960px){.grid{grid-template-columns:repeat(4,1fr)}}
+
+    .card{background:var(--card); border:1px solid var(--border); border-radius:18px; overflow:hidden; display:flex; flex-direction:column}
+    .thumb{position:relative; width:100%; padding-top:56.25%; background:#0e1016}
+    .thumb img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+    .duration{position:absolute; right:8px; bottom:8px; font-size:11px; background:rgba(0,0,0,.55); color:#fff; padding:3px 6px; border-radius:6px}
+    .meta{padding:12px 12px 14px}
+    .title{font-weight:700; line-height:1.35; font-size:14px; margin:0 0 8px}
+    .sub{color:var(--muted); font-size:12px}
+
+    /* Hero */
+    .hero{background:linear-gradient(180deg, rgba(124,92,255,.18), transparent); border:1px solid var(--border); border-radius:20px; padding:22px 18px; margin:6px 0 14px}
+    .hero h1{margin:0 0 6px; font-size:22px}
+    .hero p{margin:0; color:var(--muted); font-size:14px}
+
+    /* Footer */
+    .footer{opacity:.8; font-size:12px; color:var(--muted); text-align:center; padding:24px 0}
+
+    /* Modal */
+    .modal{position:fixed; inset:0; background:rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; padding:16px}
+    .modal.open{display:flex}
+    .modal-card{width:min(960px, 96vw); background:#0b0c10; border:1px solid var(--border); border-radius:16px; overflow:hidden}
+    .modal-head{display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:#0f1016}
+    .modal-title{font-weight:700}
+    .modal-body{position:relative; padding-top:56.25%; background:black}
+    .modal-body iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="navbar">
+      <div class="brand"><div class="logo"></div> VlogStream</div>
+      <div class="nav-right" style="flex:1; gap:12px; margin-left:14px">
+        <div class="search" style="flex:1">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21L15.8033 15.8033M18 10.5C18 14.0899 15.0899 17 11.5 17C7.91015 17 5 14.0899 5 10.5C5 6.91015 7.91015 4 11.5 4C15.0899 4 18 6.91015 18 10.5Z" stroke="#c9cccf" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <input id="searchInput" placeholder="Search vlogs (travel, study, tech...)" />
+        </div>
+        <button class="btn" id="toggleTheme">🌙</button>
+      </div>
+    </div>
+
+    <div class="hero">
+      <h1>Discover the best vlogs in one place</h1>
+      <p>Curated from YouTube — clean, minimal, distraction‑free.</p>
+    </div>
+
+    <div class="chips" id="chips">
+      <!-- Category chips (mapped to search queries) -->
+      <button class="chip active" data-q="vlog">All</button>
+      <button class="chip" data-q="travel vlog">Travel</button>
+      <button class="chip" data-q="study vlog">Study</button>
+      <button class="chip" data-q="tech vlog">Tech</button>
+      <button class="chip" data-q="food vlog">Food</button>
+      <button class="chip" data-q="lifestyle vlog">Lifestyle</button>
+      <button class="chip" data-q="daily vlog">Daily</button>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="footer">Built with ❤️ .</div>
+  </div>
+
+  <!-- Modal for inline watching -->
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div class="modal-title" id="modalTitle">Playing…</div>
+        <button class="btn" id="closeModal">Close</button>
+      </div>
+      <div class="modal-body">
+        <iframe id="player" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================
+    // YouTube API — CONFIG
+    // ==========================
+    // TODO: Replace with your YouTube Data API v3 key.
+    // IMPORTANT: Using API key in client is fine for MVP but exposes the key.
+    // Later we will proxy via a tiny Node/Express backend to keep the key secret.
+    const YT_API_KEY = "AIzaSyBTrk4CmMf1rv84wxmigJc2TJc1Vs1R77U"; 
+    // Utility: format ISO date to relative (e.g., '3 days ago')
+    function timeAgo(iso){
+      const d = new Date(iso); const diff = (Date.now() - d.getTime())/1000;
+      const t = [[31536000,'y'],[2592000,'mo'],[604800,'w'],[86400,'d'],[3600,'h'],[60,'m']];
+      for(const [s, label] of t){ if(diff>=s) return Math.floor(diff/s)+label+" ago" }
+      return "just now";
+    }
+
+    // Debounce helper
+    const debounce = (fn, wait=400)=>{ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait) } }
+
+    // Theme toggle (persist)
+    const btnTheme = document.getElementById('toggleTheme');
+    const themePref = localStorage.getItem('theme') || 'dark';
+    const applyTheme = (mode)=>{ document.documentElement.style.setProperty('--bg', mode==='dark'?'#0b0c10':'#f6f7fb'); document.documentElement.style.setProperty('--card', mode==='dark'?'#111217':'#ffffff'); document.documentElement.style.setProperty('--text', mode==='dark'?'#e6e7eb':'#0b0c10'); document.documentElement.style.setProperty('--muted', mode==='dark'?'#9aa0a6':'#5f6368'); document.documentElement.style.setProperty('--chip', mode==='dark'?'#1a1c24':'#f0f2f6'); document.documentElement.style.setProperty('--chip-text', mode==='dark'?'#cfd3dc':'#202124'); document.documentElement.style.setProperty('--border', mode==='dark'?'#22242c':'#e6e8ef'); document.documentElement.style.setProperty('--hover', mode==='dark'?'#191b22':'#f3f5fb'); btnTheme.textContent = mode==='dark'?'🌙':'☀️'; }
+    applyTheme(themePref);
+    btnTheme.addEventListener('click', ()=>{ const next = (localStorage.getItem('theme')||'dark')==='dark'?'light':'dark'; localStorage.setItem('theme', next); applyTheme(next); })
+
+    // Elements
+    const grid = document.getElementById('grid');
+    const chips = document.getElementById('chips');
+    const searchInput = document.getElementById('searchInput');
+
+    // Modal elements
+    const modal = document.getElementById('modal');
+    const player = document.getElementById('player');
+    const modalTitle = document.getElementById('modalTitle');
+    const closeModal = document.getElementById('closeModal');
+    closeModal.addEventListener('click', ()=>{ modal.classList.remove('open'); player.src=''; })
+    modal.addEventListener('click', (e)=>{ if(e.target===modal){ modal.classList.remove('open'); player.src=''; } })
+
+    // API: search videos by query
+    async function fetchVlogs(query){
+      const params = new URLSearchParams({
+        key: YT_API_KEY,
+        q: query,
+        type: 'video',
+        part: 'snippet',
+        maxResults: '16',
+        videoEmbeddable: 'true',
+        safeSearch: 'moderate',
+        order: 'date'
+      });
+      const url = `https://www.googleapis.com/youtube/v3/search?${params}`;
+      const res = await fetch(url);
+      if(!res.ok){ throw new Error('YouTube API error'); }
+      const data = await res.json();
+      return data.items.map(it=>({
+        id: it.id.videoId,
+        title: it.snippet.title,
+        channel: it.snippet.channelTitle,
+        publishedAt: it.snippet.publishedAt,
+        thumb: it.snippet.thumbnails.high?.url || it.snippet.thumbnails.medium?.url,
+      }));
+    }
+
+    function renderVlogs(list){
+      if(!list || list.length===0){ grid.innerHTML = `<div class="card" style="grid-column:1/-1; padding:24px">No results found. Try another query.</div>`; return }
+      grid.innerHTML = list.map(v=>`
+        <div class="card" data-id="${v.id}" data-title="${v.title.replace(/"/g,'&quot;')}">
+          <div class="thumb">
+            <img loading="lazy" src="${v.thumb}" alt="${v.title}" />
+            <div class="duration">YouTube</div>
+          </div>
+          <div class="meta">
+            <h3 class="title">${v.title}</h3>
+            <div class="sub">${v.channel} • ${timeAgo(v.publishedAt)}</div>
+          </div>
+        </div>
+      `).join('');
+
+      // Attach click handlers for modal play
+      document.querySelectorAll('.card').forEach(card=>{
+        card.addEventListener('click', ()=>{
+          const id = card.getAttribute('data-id');
+          const title = card.getAttribute('data-title');
+          modalTitle.textContent = title;
+          player.src = `https://www.youtube.com/embed/${id}?autoplay=1`;
+          modal.classList.add('open');
+        })
+      })
+    }
+
+    // Load initial feed
+    let currentQuery = 'vlog';
+    let loading = false;
+    async function load(query){
+      try{
+        loading = true;
+        currentQuery = query;
+        grid.innerHTML = '<div class="card" style="grid-column:1/-1; padding:24px">Loading vlogs…</div>';
+        const list = await fetchVlogs(query);
+        renderVlogs(list);
+      }catch(err){
+        console.error(err);
+        grid.innerHTML = `<div class="card" style="grid-column:1/-1; padding:24px">
+          Failed to load from YouTube API. <br/>Check your API key and network, then refresh.
+        </div>`;
+      }finally{ loading = false; }
+    }
+
+    // Chip filters
+    chips.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.chip'); if(!btn) return;
+      document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+      btn.classList.add('active');
+      const q = btn.dataset.q;
+      searchInput.value = '';
+      load(q);
+    })
+
+    // Search
+    const handleSearch = debounce(()=>{
+      const q = searchInput.value.trim();
+      if(q.length===0){ load(document.querySelector('.chip.active').dataset.q); return; }
+      load(q + ' vlog');
+    }, 500);
+    searchInput.addEventListener('input', handleSearch);
+
+    // Kickoff
+    load(currentQuery);
+  </script>
+</body>
+</html>

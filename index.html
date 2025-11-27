@@ -118,7 +118,10 @@
     // TODO: Replace with your YouTube Data API v3 key.
     // IMPORTANT: Using API key in client is fine for MVP but exposes the key.
     // Later we will proxy via a tiny Node/Express backend to keep the key secret.
-    const YT_API_KEY = "AIzaSyBTrk4CmMf1rv84wxmigJc2TJc1Vs1R77U"; 
+    const API_KEY = "YOUR_API_KEY_HERE";
+    // 👉 Replace "YOUR_API_KEY_HERE" with your YouTube API key
+
+     
     // Utility: format ISO date to relative (e.g., '3 days ago')
     function timeAgo(iso){
       const d = new Date(iso); const diff = (Date.now() - d.getTime())/1000;
@@ -243,3 +246,4 @@
   </script>
 </body>
 </html>
+

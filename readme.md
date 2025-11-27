@@ -29,8 +29,23 @@ const API_KEY = "YOUR_YOUTUBE_API_KEY";
 
 4️⃣ Refresh and explore the vlogs 🎬
 
+🔐 API Key Setup (Required)
+
+This project uses YouTube Data API v3.
+To run this project, follow the steps:
+
+Go to Google Cloud Console → Create a project
+Enable YouTube Data API v3
+Generate an API Key
+In the project, open script.js / index.html
+Replace:
+const API_KEY = "YOUR_API_KEY_HERE";
+
+⚠️ Do not expose your own key publicly
+
 
 👩‍💻 Author
 Blessy M
 UI/UX & Frontend Developer
+
 📩 Email: blessymarkm@gmail.com 

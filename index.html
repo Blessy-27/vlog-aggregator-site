@@ -19,8 +19,8 @@
     .container{max-width:1200px; margin:0 auto; padding:20px}
 
     /* Navbar */
-    .navbar{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 0}
-    .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.5px}
+    .navbar{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0}
+    .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.4px}
     .logo{width:34px; height:34px; border-radius:10px; background:linear-gradient(145deg, #9b8cff, #5f39ff)}
     .nav-right{display:flex; align-items:center; gap:10px}
     .search{flex:1; display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border); padding:10px 12px; border-radius:14px}
@@ -29,12 +29,12 @@
     .btn:hover{background:var(--hover)}
 
     /* Chips */
-    .chips{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 12px}
+    .chips{display:flex; flex-wrap:wrap; gap:10px; margin:15px 0 12px}
     .chip{background:var(--chip); border:1px solid var(--border); color:var(--chip-text); padding:8px 12px; border-radius:999px; font-size:13px; cursor:pointer}
     .chip.active{background:var(--brand); color:white; border-color:transparent}
 
     /* Grid */
-    .grid{display:grid; grid-template-columns:repeat(1,1fr); gap:16px}
+    .grid{display:grid; grid-template-columns:repeat(1,1fr); gap:15px}
     @media(min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
     @media(min-width:960px){.grid{grid-template-columns:repeat(4,1fr)}}
 
@@ -68,7 +68,7 @@
   <div class="container">
     <div class="navbar">
       <div class="brand"><div class="logo"></div> VlogStream</div>
-      <div class="nav-right" style="flex:1; gap:12px; margin-left:14px">
+      <div class="nav-right" style="flex:1; gap:12px; margin-left:13px">
         <div class="search" style="flex:1">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21L15.8033 15.8033M18 10.5C18 14.0899 15.0899 17 11.5 17C7.91015 17 5 14.0899 5 10.5C5 6.91015 7.91015 4 11.5 4C15.0899 4 18 6.91015 18 10.5Z" stroke="#c9cccf" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <input id="searchInput" placeholder="Search vlogs (travel, study, tech...)" />
